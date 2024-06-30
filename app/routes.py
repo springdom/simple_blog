@@ -63,3 +63,13 @@ def new_post():
 def post(id):
     post = Post.query.get_or_404(id)
     return render_template('post.html', post=post)
+
+@app.route('/admin/users')
+@login_required
+def list_users():
+    if not current_user.is_admin:  # Assuming you have a way to check for admin privileges
+        flash('You do not have permission to view this page.')
+        return redirect(url_for('index'))
+    
+    users = User.query.all()
+    return render_template('list_users.html', users=users)

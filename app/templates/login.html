@@ -3,6 +3,7 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
+    <h1>Login</h1>
     <form method="post" action="{{ url_for('login') }}">
         {{ form.hidden_tag() }}
         <div>
@@ -18,3 +19,4 @@
             {{ form.submit() }}
         </div>
     </form>
+{% endblock %}

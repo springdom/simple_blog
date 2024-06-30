@@ -3,11 +3,14 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <h1>Posts</h1>
+    <h1 class="my-4">Posts</h1>
     {% for post in posts %}
-        <div>
-            <h2><a href="{{ url_for('post', id=post.id) }}">{{ post.title }}</a></h2>
-            <p>{{ post.body }}</p>
+        <div class="card my-4">
+            <div class="card-body">
+                <h2 class="card-title"><a href="{{ url_for('post', id=post.id) }}">{{ post.title }}</a></h2>
+                <p class="card-text">{{ post.body }}</p>
+                <p class="text-muted">Posted by {{ post.author.username }} on {{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
         </div>
     {% endfor %}
 {% endblock %}

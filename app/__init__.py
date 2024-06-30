@@ -16,5 +16,7 @@ def create_app():
     migrate.init_app(app, db)
     login.init_app(app)
 
-    from app import routes, models
+    with app.app_context():
+        from app import routes, models  # Import routes and models
+
     return app

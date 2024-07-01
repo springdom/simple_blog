@@ -1,0 +1,22 @@
+
+module simpleblog 1.0;
+
+require {
+	type httpd_sys_rw_content_t;
+	type user_home_t;
+	type init_t;
+	class sock_file { create setattr unlink };
+	class file { execute execute_no_trans ioctl map open read };
+	class lnk_file read;
+	class dir add_name;
+}
+
+#============= init_t ==============
+allow init_t httpd_sys_rw_content_t:dir add_name;
+allow init_t httpd_sys_rw_content_t:file { execute execute_no_trans ioctl open read };
+
+#!!!! This avc can be allowed using the boolean 'domain_can_mmap_files'
+allow init_t httpd_sys_rw_content_t:file map;
+allow init_t httpd_sys_rw_content_t:lnk_file read;
+allow init_t httpd_sys_rw_content_t:sock_file { create setattr };
+allow init_t user_home_t:sock_file unlink;

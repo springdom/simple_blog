@@ -1,0 +1,177 @@
+Summary of Steps Taken and Troubleshooting
+
+You've successfully set up a Flask application with Gunicorn and Nginx on CentOS, ensuring that it is accessible via a web server. Here is a summary of what you've done and the troubleshooting steps involved:
+1. Initial Setup of Flask Application
+
+    Created a Flask application and structured it with necessary files and directories.
+    Ensured the Flask application runs correctly in development mode.
+
+2. Setup Virtual Environment
+
+    Created a virtual environment for the Flask application.
+    Installed necessary dependencies, including Flask and Gunicorn, within the virtual environment.
+
+3. Configured Gunicorn to Serve the Flask Application
+
+    Created a Gunicorn systemd service file (/etc/systemd/system/simpleblog.service).
+
+    /etc/systemd/system/simpleblog.service:
+
+    ini
+
+[Unit]
+Description=Gunicorn instance to serve simpleblog
+After=network.target
+
+[Service]
+User=mtaylor
+Group=nginx
+WorkingDirectory=/home/mtaylor/simple_blog
+Environment="PATH=/home/mtaylor/simple_blog/venv/bin"
+ExecStart=/home/mtaylor/simple_blog/venv/bin/gunicorn --workers 3 --bind unix:/home/mtaylor/simple_blog/simpleblog.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+
+Reloaded the systemd daemon and started the Gunicorn service:
+
+bash
+
+    sudo systemctl daemon-reload
+    sudo systemctl start simpleblog
+    sudo systemctl enable simpleblog
+
+4. Configured Nginx to Proxy Requests to Gunicorn
+
+    Created an Nginx site configuration file (/etc/nginx/sites-available/simpleblog).
+
+    /etc/nginx/sites-available/simpleblog:
+
+    nginx
+
+server {
+    listen 80;
+    server_name 127.0.0.1;
+
+    location / {
+        include /etc/nginx/proxy_params;
+        proxy_pass http://unix:/home/mtaylor/simple_blog/simpleblog.sock;
+    }
+}
+
+Created a symbolic link to this configuration in the sites-enabled directory:
+
+bash
+
+sudo ln -s /etc/nginx/sites-available/simpleblog /etc/nginx/sites-enabled/
+
+Edited the main Nginx configuration file (/etc/nginx/nginx.conf) to include the sites-enabled directory.
+
+/etc/nginx/nginx.conf:
+
+nginx
+
+http {
+    ...
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+    ...
+}
+
+Created a proxy_params file to ensure proper proxy headers:
+
+nginx
+
+sudo nano /etc/nginx/proxy_params
+
+Contents of proxy_params:
+
+nginx
+
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+
+Tested and reloaded the Nginx configuration:
+
+bash
+
+    sudo nginx -t
+    sudo systemctl reload nginx
+
+5. Addressed Permission Issues
+
+    Ensured correct ownership and permissions for the socket file:
+
+    bash
+
+sudo chown mtaylor:nginx /home/mtaylor/simple_blog/simpleblog.sock
+sudo chmod 770 /home/mtaylor/simple_blog/simpleblog.sock
+
+Ensured Nginx user can access the directory:
+
+bash
+
+sudo chown -R mtaylor:nginx /home/mtaylor/simple_blog
+sudo chmod -R 755 /home/mtaylor/simple_blog
+
+Addressed SELinux configurations if enabled:
+
+bash
+
+    sudo semanage fcontext -a -t httpd_sys_rw_content_t '/home/mtaylor/simple_blog(/.*)?'
+    sudo restorecon -R /home/mtaylor/simple_blog
+
+6. Removed Default Nginx Configuration to Avoid Conflicts
+
+    Commented out or removed the default server block from the main Nginx configuration file to prevent redirection to the CentOS test page.
+
+    Example:
+
+    nginx
+
+    # server {
+    #     listen       80;
+    #     listen       [::]:80;
+    #     server_name  _;
+    #     root         /usr/share/nginx/html;
+    #     ...
+    # }
+
+7. Verified the Setup
+
+    Checked the Nginx and Gunicorn logs for any errors:
+
+    bash
+
+sudo tail -f /var/log/nginx/access.log /var/log/nginx/error.log
+sudo journalctl -u simpleblog -f
+
+Tested the application locally using curl:
+
+bash
+
+    curl --unix-socket /home/mtaylor/simple_blog/simpleblog.sock http://localhost/
+
+    Accessed the application via a web browser at http://127.0.0.1.
+
+Troubleshooting Steps
+
+    Permissions Issues:
+        Ensure correct ownership and permissions for the socket file and directory.
+        Address SELinux contexts if enabled.
+
+    Nginx Configuration Issues:
+        Verify the Nginx configuration with nginx -t.
+        Ensure there are no conflicting server blocks.
+
+    Service Management:
+        Reload the systemd daemon after changing service files.
+        Restart services after making changes.
+
+    Logs and Debugging:
+        Check Nginx and Gunicorn logs for errors.
+        Use curl to test the local socket connection.
+
+By following these steps, you were able to successfully set up your Flask application to be served by Gunicorn and proxied by Nginx, making it accessible via your web server. If you encounter any further issues, reviewing the logs and permissions will be key to troubleshooting.

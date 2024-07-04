@@ -48,7 +48,7 @@ pipeline {
                         def servers = ['192.168.1.72', '192.168.1.101']
                         servers.each { server ->
                             sh """
-                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no mtaylor@${server} 'cd /home/mtaylor/simple_blog && git pull origin main && sudo systemctl restart simpleblog'
+                            ssh -o StrictHostKeyChecking=no mtaylor@${server} 'cd /home/mtaylor/simple_blog && git pull origin main && sudo systemctl restart simpleblog'
                             """
                         }
                     }

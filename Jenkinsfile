@@ -1,8 +1,8 @@
 pipeline {
-    agent any
+    agent { label 'agent1' }  // Ensure this label matches the agent's label
 
     environment {
-        SSH_CREDENTIALS = '1543ab92-7e92-4428-9ca2-407e49c80cb2'
+        SSH_CREDENTIALS = 'your-ssh-credentials-id'
     }
 
     stages {
@@ -11,19 +11,26 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/springdom/simple_blog.git'
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
             }
         }
-        
+
         stage('Run Tests') {
             steps {
-                sh 'pytest'
+                sh '''
+                . venv/bin/activate
+                pytest
+                '''
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 script {
@@ -32,7 +39,7 @@ pipeline {
                         servers.each { server ->
                             sh """
                             ssh -i ${SSH_KEY} mtaylor@${server} << 'EOF'
-                                cd /home/mtaylor/simple_blog
+                                cd /path/to/simple_blog
                                 git pull
                                 sudo systemctl restart simpleblog
                             EOF

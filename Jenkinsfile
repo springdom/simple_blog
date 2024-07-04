@@ -15,6 +15,7 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 sh '''
+                rm -rf venv
                 python3 -m venv venv
                 . venv/bin/activate
                 pip install --upgrade pip
@@ -35,7 +36,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                pytest tests/
+                pytest
                 '''
             }
         }
@@ -47,4 +48,24 @@ pipeline {
                         def servers = ['192.168.1.72', '192.168.1.101']
                         servers.each { server ->
                             sh """
-                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no user@${server} 'cd /path/to
+                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no user@${server} 'cd /path/to/app && git pull origin main && sudo systemctl restart simpleblog'
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Deployment finished.'
+        }
+        success {
+            echo 'Deployment succeeded!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}

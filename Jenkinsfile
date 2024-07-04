@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'agent1'}
 
     environment {
         SSH_CREDENTIALS_ID = '1543ab92-7e92-4428-9ca2-407e49c80cb2'

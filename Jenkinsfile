@@ -14,7 +14,16 @@ pipeline {
                          ])
             }
         }
-        
+        stage('Check for Unstaged Changes') {
+            steps {
+                script {
+                    def status = sh(script: 'git status --porcelain', returnStdout: true).trim()
+                    if (status) {
+                        error "There are unstaged changes in the repository. Please commit or stash your changes before proceeding."
+                    }
+                }
+            }
+        }
         stage('Setup Python Environment') {
             steps {
                 sh '''

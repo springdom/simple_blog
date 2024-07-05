@@ -1,10 +1,6 @@
 pipeline {
     agent { label 'agent1'}
 
-    environment {
-        CREDS_ID = '1543ab92-7e92-4428-9ca2-407e49c80cb2'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -53,7 +49,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: "${env.CREDS_ID}", keyFileVariable: 'SSH_KEY')]) {
                         def servers = ['192.168.1.72', '192.168.1.101']
                         servers.each { server ->
                             sh """

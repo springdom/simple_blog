@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', 
-                          branches: [[name: '*/main']], 
+                checkout([$class: 'GitSCM',
+                          branches: [[name: '*/main']],
                           userRemoteConfigs: [[url: 'https://github.com/springdom/simple_blog.git']]
                          ])
             }
@@ -39,16 +39,17 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Run Tests') {
             steps {
                 sh 'echo hello'
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 script {
+                    withCredentials([sshUserPrivateKey(credentialsId: "${env.CREDS_ID}", keyFileVariable: 'SSH_KEY')]) {
                         def servers = ['192.168.1.72', '192.168.1.101']
                         servers.each { server ->
                             sh """

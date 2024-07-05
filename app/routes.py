@@ -4,10 +4,13 @@ from app.forms import LoginForm, RegistrationForm, PostForm
 from app.models import User, Post
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlparse, urljoin  # Correct import
+from app import REQUEST_TIME, REQUEST_COUNTER
 
 @app.route('/')
 @app.route('/index')
+@REQUEST_TIME.time()
 def index():
+    REQUEST_COUNTER.inc()
     posts = Post.query.all()
     return render_template('home.html', posts=posts)
 

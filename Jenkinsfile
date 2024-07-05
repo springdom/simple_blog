@@ -49,14 +49,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: "${env.CREDS_ID}", keyFileVariable: 'SSH_KEY')]) {
                         def servers = ['192.168.1.72', '192.168.1.101']
                         servers.each { server ->
                             sh """
                             ssh -o StrictHostKeyChecking=no mtaylor@${server} 'cd /home/mtaylor/simple_blog && git pull origin main && sudo systemctl restart simpleblog'
                             """
                         }
-                    }
                 }
             }
         }

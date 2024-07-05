@@ -5,6 +5,9 @@ from app.models import User, Post
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlparse, urljoin  # Correct import
 from app import REQUEST_TIME, REQUEST_COUNTER
+from prometheus_client import generate_latest
+from flask import Response
+
 
 @app.route('/')
 @app.route('/index')
@@ -13,6 +16,10 @@ def index():
     REQUEST_COUNTER.inc()
     posts = Post.query.all()
     return render_template('home.html', posts=posts)
+
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype='text/plain')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -14,7 +14,7 @@ from flask import Response
 @REQUEST_TIME.time()
 def index():
     REQUEST_COUNTER.inc()
-    posts = Post.query.order_by(Post.timestamp.des()).all()
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
     return render_template('home.html', posts=posts)
 
 @app.route('/metrics')
